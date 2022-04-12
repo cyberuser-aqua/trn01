@@ -44,7 +44,7 @@ def main():
     result = {f'{pid} {get_file_attrs(pid, args.path)}'
               for pid in enumerate_pids()
               if has_file_open(pid, args.path)}
-    print(*result)
+    print(*result, sep='\n')
 
 
 if __name__ == '__main__':
