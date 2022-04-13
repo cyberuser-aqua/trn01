@@ -22,8 +22,12 @@ def filter_out_not_files(map_line) -> bool:
 
 def main():
     args = parse_args()
-    maps = get_proc_maps(args.pid)
-    file_maps = filter(filter_out_not_files, maps)
+    try:
+        maps = get_proc_maps(args.pid)
+        file_maps = filter(filter_out_not_files, maps)
+    except PermissionError:
+        print('Run me with super-user premissions')
+        exit(1)
     for fm in file_maps:
         print(*fm)
 

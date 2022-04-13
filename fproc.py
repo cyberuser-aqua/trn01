@@ -5,6 +5,7 @@ from pathlib import PosixPath
 from stat import S_IREAD, S_IWRITE
 from typing import List, Generator, Literal
 
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -21,8 +22,8 @@ def enumerate_fds(pid: int) -> Generator[str, None, None]:
 
 
 def has_file_open(pid: int, fpath: PosixPath) -> bool:
-    for f in listdir(f'/proc/{pid}/fd'):
-        if path.realpath(f'/proc/{pid}/fd/{f}') == str(fpath.absolute()):
+    for fd in enumerate_fds(pid):
+        if path.realpath(fd) == str(fpath.absolute()):
             return True
     return False
 
@@ -41,9 +42,13 @@ def get_file_attrs(pid: int, fpath: PosixPath) -> Literal['--', 'r-', '-w', 'rw'
 
 def main():
     args = parse_args()
-    result = {f'{pid} {get_file_attrs(pid, args.path)}'
-              for pid in enumerate_pids()
-              if has_file_open(pid, args.path)}
+    try:
+        result = {f'{pid} {get_file_attrs(pid, args.path)}'
+                  for pid in enumerate_pids()
+                  if has_file_open(pid, args.path)}
+    except PermissionError:
+        print('Run me with super-user premissions')
+        exit(1)
     print(*result, sep='\n')
 
 
